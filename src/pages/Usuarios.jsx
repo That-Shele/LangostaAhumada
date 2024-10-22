@@ -3,26 +3,29 @@ import Axios from '../api/Axios';
 import useAuth from '../hooks/useAuth';
 import Swal from 'sweetalert2';
 const USER_URL = "/cliente";
+const USER_DELETE_URL = `/cliente/DeleteCliente/`;
+const USER_EDIT_URL = `/cliente/UpdateCliente/`;
 
 const Usuarios = () => {
     const [data, setData] = useState(null);
     const {auth} = useAuth();
 
     function requestData() {
+      setData(null)
       Axios.get(USER_URL, {
         headers: {
           "Access-Control-Allow-Origin": "http://localhost:5173/",
         },
       }).then((res) => setData(res.data));
       console.log(data);
+
     }
 
     useEffect(() => {
         requestData();
     }, [])
 
-    const USER_DELETE_URL = `/cliente/DeleteCliente/`;
-    const USER_EDIT_URL = `/cliente/UpdateCliente/`;
+    
 
     function onDelete (id) {
       try {
@@ -43,6 +46,7 @@ const Usuarios = () => {
               }
             );
             Swal.fire("Éxito", "Usuario eliminado exitosamente", "success");
+            requestData();
           }
         });
       } catch (err) {
@@ -94,9 +98,10 @@ const Usuarios = () => {
                     Swal.fire("Éxito", "Admin creado exitosamente!", "success");
                     requestData();
                 }
-            })
+            });
+            requestData();
         }
-        else{
+        else if (user.tipoUsuario === "Admin"){
             Swal.fire({
               title: "Quieres quitarle permisos de administrador a este usuario?",
               showCancelButton: true,
@@ -124,8 +129,9 @@ const Usuarios = () => {
                 requestData();
               }
             });
+            requestData();
         }
-      
+        
       } catch (err) {
       Swal.fire(
         "Error",
@@ -168,47 +174,59 @@ const Usuarios = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            { data?.map((user) => {
-                 return (
-                   <tr className="bg-white" key={user.idCliente}>
-                     <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
-                       {user.idCliente}
-                     </td>
-                     <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
-                       {user.nombreCliente}
-                     </td>
-                     <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
-                       {user.correo}
-                     </td>
-                     <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
-                       {user.tipoUsuario}
-                     </td>
-                     <td className="p-3 ">
-                       {auth.correo === user.correo ? (
-                         <></>
-                       ) : user.tipoUsuario === "User" ? (
-                         <div className="grid grid-cols-2 gap-3">
-                           <button onClick={() => onCreate(user)} className=" bg-blue-800/70 rounded-xl">
-                             <i className="fa-solid fa-edit" />
-                           </button>
-                           <button onClick={() => onDelete(user.idCliente)} className=" bg-red-800/70 rounded-xl">
-                             <i className="fa-solid fa-trash" />
-                           </button>
-                         </div>
-                       ) : (
-                         <div className="grid grid-cols-2 gap-3">
-                           <button onClick={() => onCreate(user)} className=" bg-green-500/70 rounded-xl">
-                             <i className="fa-solid fa-edit" />
-                           </button>
-                           <button onClick={() => onDelete(user.idCliente)} className=" bg-red-800/70 rounded-xl">
-                             <i className="fa-solid fa-trash" />
-                           </button>
-                         </div>
-                       )}
-                     </td>
-                   </tr>
-                 );   
-            })}
+            {data?.map((user) => {
+                return (
+              <tr className="bg-white" key={user.idCliente}>
+                <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
+                  {user.idCliente}
+                </td>
+                <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
+                  {user.nombreCliente}
+                </td>
+                <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
+                  {user.correo}
+                </td>
+                <td className="p-3 text-sm text-gray-700 border-r border-gray-200 whitespace-nowrap">
+                  {user.tipoUsuario}
+                </td>
+                <td className="p-3 ">
+                  {auth.correo === user.correo ? 
+                    <></>
+                  : user.tipoUsuario === "User" ? 
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => onCreate(user)}
+                        className=" bg-blue-800/70 rounded-xl"
+                      >
+                        <i className="fa-solid fa-edit" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(user.idCliente)}
+                        className=" bg-red-800/70 rounded-xl"
+                      >
+                        <i className="fa-solid fa-trash" />
+                      </button>
+                    </div>
+                  : 
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => onCreate(user)}
+                        className=" bg-green-500/70 rounded-xl"
+                      >
+                        <i className="fa-solid fa-edit" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(user.idCliente)}
+                        className=" bg-red-800/70 rounded-xl"
+                      >
+                        <i className="fa-solid fa-trash" />
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            );
+          })}
           </tbody>
         </table>
       </div>

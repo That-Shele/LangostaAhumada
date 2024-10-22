@@ -16,14 +16,14 @@ const Card = ({ img, id, desc, name, price }) => {
           }
         });
       } else {
-        return [...currentItems, { id, quantity: 1, price }];
+        return [...currentItems, {id, itemName: name, quantity: 1, itemPrice : price, itemImage : img }];
       }
     });
   };
 
   const removeItem = (id) => {
     setCart((currentItems) => {
-      if (currentItems.find((item) => item.id === id)?.quantity === 1) {
+      if (currentItems.find((item) => item.id === id)?.quantity < 1) {
         return currentItems.filter((item) => item.id !== id);
       } else {
         return currentItems.map((item) => {

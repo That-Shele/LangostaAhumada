@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import Axios from '../api/Axios';
 import CardAdmin from '../components/Card/CardAdmin';
 import CreatePlato from '../components/Modals/CreatePlato';
+import Swal from 'sweetalert2';
 const MENU_URL = "/plato";
 
 const PlatosManager = () => {
   const [data, setData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const PLATO_DELETE_URL = `/plato/DeletePlato/`;
+
   
 
   const openModal = () => {
@@ -18,17 +21,56 @@ const PlatosManager = () => {
     requestData();
   };
 
+  const onDelete = (id) => {
+    try {
+      Swal.fire({
+        title: "Quieres borrar este plato?",
+        showCancelButton: true,
+        confirmButtonText: "Si",
+        cancelButtonText: "Cancelar",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const response = Axios.delete(PLATO_DELETE_URL + `${id}`, {
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "http://localhost:5173/",
+            },
+          });
+          Swal.fire("Éxito", "Plato eliminado exitosamente", "success");
+          
+        }
+      });
+      requestData();
+    } catch (err) {
+      Swal.fire(
+        "Error",
+        "Hubo un error, revise la consola para más información",
+        "error"
+      );
+      if (!err?.response) {
+        console.log("No Server Response");
+      } else if (err.response?.status === 400) {
+        console.log("Campos inválidos");
+      } else if (err.response?.status === 401) {
+        console.log("Sin autorización");
+      } else {
+        console.log("Creación fallida");
+      }
+    }
+  };
+
  function requestData() {
    Axios.get(MENU_URL, {
      headers: {
        "Access-Control-Allow-Origin": "http://localhost:5173/",
      },
    }).then((res) => setData(res.data));
+   
  }
 
  useEffect(() => {
     requestData();
- }, [])
+ }, [data])
 
   return (
     <div className="p-5 m-4 bg-gray-800/50 rounded-3xl lg:p-6">
@@ -58,6 +100,7 @@ const PlatosManager = () => {
             name={food.nombrePlato}
             desc={food.descripcion}
             price={food.costo}
+            del={() => onDelete(food.idPlato)}
           />
         ))}
       </div>
